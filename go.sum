@@ -1,0 +1,10 @@
+github.com/Bofry/structproto v0.1.0 h1:Zun2V0y9WsMtYPiyvoKZKzGjKzB9Gff/6TAFXJf1jA0=
+github.com/Bofry/structproto v0.1.0/go.mod h1:ExAR9NDYUXZOVlAJrz2oavvVxjaegV7Mb91HQcQYWLA=
+github.com/Bofry/types v0.1.0 h1:lEM+LcPWlC1ByerJlp0cZ4tCCosR9lemVDvu9kATV1Y=
+github.com/Bofry/types v0.1.0/go.mod h1:O0I2TpZ3YfKDgTnJO5zeaX9LO7vtdhGnwbz/oP4cKUw=
+github.com/cstockton/go-conv v0.0.0-20170524002450-66a2b2ba36e1 h1:h4OgDocdYHGiUh+zUEe4nFlb9ShoHUllqDefGaRoZFg=
+github.com/cstockton/go-conv v0.0.0-20170524002450-66a2b2ba36e1/go.mod h1:MBKpQ5HV5wcT/nQYoEqjSMiXwxPouaReOs2f4kj70SQ=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.4.0 h1:D8xgwECY7CYvx+Y2n4sBz93Jn9JRvxdiyyo8CTfuKaY=
+gopkg.in/yaml.v2 v2.4.0/go.mod h1:RDklbk79AGWmwhnvt/jBztapEOGDOx6ZbXqjP6csGnQ=
