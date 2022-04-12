@@ -2,15 +2,17 @@ package env
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
 
 type config struct {
-	RedisHost    string `env:"*REDIS_HOST"`
-	RedisSecret  string `env:"RESID_SECRET"`
-	RedisDB      int    `env:"REDIS_DB"`
-	Workspace    string `env:"*WORKSPACE"`
-	IgnoredField string `env:"-"`
+	RedisHost    string   `env:"*REDIS_HOST"`
+	RedisSecret  string   `env:"RESID_SECRET"`
+	RedisDB      int      `env:"REDIS_DB"`
+	Workspace    string   `env:"*WORKSPACE"`
+	Tags         []string `env:"TAG"`
+	IgnoredField string   `env:"-"`
 }
 
 func TestLoad(t *testing.T) {
@@ -18,6 +20,7 @@ func TestLoad(t *testing.T) {
 	os.Setenv("RESID_SECRET", "foobar")
 	os.Setenv("REDIS_DB", "3")
 	os.Setenv("WORKSPACE", "demo_test")
+	os.Setenv("TAG", "demo,test")
 
 	c := config{}
 	err := Process("", &c)
@@ -39,6 +42,10 @@ func TestLoad(t *testing.T) {
 	}
 	if c.IgnoredField != "" {
 		t.Errorf("assert 'config.IgnoredField':: expected '%v', got '%v'", "", c.IgnoredField)
+	}
+	expectedTags := []string{"demo", "test"}
+	if !reflect.DeepEqual(c.Tags, expectedTags) {
+		t.Errorf("assert 'config.Tags':: expected '%+v', got '%+v'", expectedTags, c.Tags)
 	}
 }
 
