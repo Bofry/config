@@ -12,18 +12,66 @@ import (
 	"github.com/Bofry/config"
 )
 
+func init() {
+	// set env
+	{
+		os.Clearenv()
+		os.Setenv("ENVIRONMENT", "production")
+		os.Setenv("REDIS_HOST", "127.0.0.3:6379")
+		os.Setenv("REDIS_PASSWORD", "1234")
+		os.Setenv("K8S_REDIS_HOST", "demo-kubernetes:6379")
+		os.Setenv("K8S_REDIS_PASSWORD", "p@ssw0rd")
+		os.Setenv("K8S_REDIS_DB", "6")
+	}
+	// set command line arguments
+	{
+		os.Args = []string{"example", "--redis-db", "32"}
+		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+	}
+	// prepare config.yaml
+	{
+		os.WriteFile("config.yaml", []byte(
+			strings.Join([]string{
+				"redisDB: 3",
+				"redisPoolSize: 10",
+				"workspace: demo_test",
+			}, "\n")), 0644)
+	}
+	// prepare config.staging.yaml
+	{
+		os.WriteFile("config.staging.yaml", []byte(
+			strings.Join([]string{
+				"redisDB: 9",
+				"redisPoolSize: 10",
+				"workspace: demo_stag",
+			}, "\n")), 0644)
+	}
+	// prepare config.production.yaml
+	{
+		os.WriteFile("config.production.yaml", []byte(
+			strings.Join([]string{
+				"redisDB: 12",
+				"redisPoolSize: 50",
+				"workspace: demo_prod",
+			}, "\n")), 0644)
+	}
+}
+
 type DummyConfig struct {
-	RedisHost     string `env:"REDIS_HOST"       yaml:"redisHost"       arg:"redis-host;the Redis server address and port"`
-	RedisPassword string `env:"REDIS_PASSWORD"   yaml:"redisPassword"   arg:"redis-passowrd;the Redis password"`
-	RedisDB       int    `env:"REDIS_DB"         yaml:"redisDB"         arg:"redis-db;the Redis database number"`
-	RedisPoolSize int    `env:"-"                yaml:"redisPoolSize"`
-	Workspace     string `env:"-"                yaml:"workspace"       arg:"workspace;the data workspace"`
+	RedisHost     string   `env:"REDIS_HOST"       yaml:"redisHost"       arg:"redis-host;the Redis server address and port"`
+	RedisPassword string   `env:"REDIS_PASSWORD"   yaml:"redisPassword"   arg:"redis-passowrd;the Redis password"`
+	RedisDB       int      `env:"REDIS_DB"         yaml:"redisDB"         arg:"redis-db;the Redis database number"`
+	RedisPoolSize int      `env:"-"                yaml:"redisPoolSize"`
+	Workspace     string   `env:"-"                yaml:"workspace"       arg:"workspace;the data workspace"`
+	Tags          []string `env:"TAG"`
+	Version       string   `resource:".VERSION"`
 }
 
 func main() {
 	conf := DummyConfig{}
 
 	config.NewConfigurationService(&conf).
+		LoadDotEnv().
 		LoadEnvironmentVariables("").
 		LoadEnvironmentVariables("K8S").
 		LoadYamlFile("config.yaml").
@@ -32,6 +80,13 @@ func main() {
 
 	fmt.Printf("%+v\n", conf)
 }
+```
+
+```dotenv
+# file: .env
+REDIS_HOST=127.0.0.1:6379
+REDIS_DB=29
+TAG=demo,test
 ```
 
 ```bash
@@ -84,3 +139,4 @@ type Config struct {
 ### Dependency
 - Yaml - https://godoc.org/gopkg.in/yaml.v2
 - Json - https://golang.org/pkg/encoding/json/
+- dotenv - github.com/joho/godotenv

@@ -30,6 +30,9 @@ func (p *ResourceBinder) Bind(field structproto.FieldInfo, rv reflect.Value) err
 	fileinfo, err := os.Stat(filename)
 	if err != nil {
 		if os.IsNotExist(err) {
+			if field.HasFlag(structproto.RequiredFlag) {
+				return err
+			}
 			return nil
 		}
 		return err

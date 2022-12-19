@@ -1,13 +1,14 @@
 package resource
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
 
 type config struct {
 	ResString string `resource:".RES_STR"`
-	ResInt    int    `resource:".RES_INT"`
+	ResInt    int    `resource:".RES_INT,required"`
 	ResBytes  []byte `resource:".RES_BIN"`
 }
 
@@ -78,8 +79,10 @@ func TestLoad_WithFromSpecifiedDir(t *testing.T) {
 }
 
 func TestLoad_WithFromEnvironmentVar(t *testing.T) {
-	c := config{}
+	os.Clearenv()
+	os.Setenv("Environment", "dev")
 
+	c := config{}
 	err := Process("${Environment}", &c)
 	if err != nil {
 		t.Error(err)

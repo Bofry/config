@@ -1,1 +1,6 @@
 .vscode
+
+.env
+.VERSION
+config.yaml
+config.*.yaml

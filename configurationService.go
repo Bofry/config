@@ -31,6 +31,22 @@ func (service *ConfigurationService) LoadEnvironmentVariables(prefix string) *Co
 	return service
 }
 
+func (service *ConfigurationService) LoadDotEnv() *ConfigurationService {
+	err := env.LoadDotEnv(service.target)
+	if err != nil && os.IsExist(err) {
+		panic(fmt.Errorf("config: %v\n", err))
+	}
+	return service
+}
+
+func (service *ConfigurationService) LoadDotEnvFile(filepath string) *ConfigurationService {
+	err := env.LoadDotEnvFile(filepath, service.target)
+	if err != nil && os.IsExist(err) {
+		panic(fmt.Errorf("config: %v\n", err))
+	}
+	return service
+}
+
 func (service *ConfigurationService) LoadCommandArguments() *ConfigurationService {
 	err := flag.Process(service.target)
 	if err != nil {
