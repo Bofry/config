@@ -1,7 +1,6 @@
 package env
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
@@ -54,7 +53,6 @@ func LoadDotEnv(target interface{}) error {
 func LoadDotEnvFile(filepath string, target interface{}) error {
 	var err error
 	path := os.ExpandEnv(filepath)
-	fmt.Printf("%v\n", path)
 	err = godotenv.Load(path)
 	if err != nil {
 		return err

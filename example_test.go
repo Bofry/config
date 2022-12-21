@@ -23,10 +23,10 @@ func Example() {
 	}
 	// set command line arguments
 	{
-		os.Args = []string{"example", "--redis-db", "32"}
+		os.Args = []string{"example", "-redis-db", "32"}
 		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	}
-	// prepare .env
+	// generate .env
 	{
 		os.WriteFile(".env", []byte(
 			strings.Join([]string{
@@ -35,14 +35,14 @@ func Example() {
 				"TAG=demo,test",
 			}, "\n")), 0644)
 	}
-	// prepare .VERSION
+	// generate .VERSION
 	{
 		os.WriteFile(".VERSION", []byte(
 			strings.Join([]string{
 				"v1.0.2",
 			}, "\n")), 0644)
 	}
-	// prepare config.yaml
+	// generate config.yaml
 	{
 		os.WriteFile("config.yaml", []byte(
 			strings.Join([]string{
@@ -51,7 +51,7 @@ func Example() {
 				"workspace: demo_test",
 			}, "\n")), 0644)
 	}
-	// prepare config.staging.yaml
+	// generate config.staging.yaml
 	{
 		os.WriteFile("config.staging.yaml", []byte(
 			strings.Join([]string{
@@ -60,7 +60,7 @@ func Example() {
 				"workspace: demo_stag",
 			}, "\n")), 0644)
 	}
-	// prepare config.production.yaml
+	// generate config.production.yaml
 	{
 		os.WriteFile("config.production.yaml", []byte(
 			strings.Join([]string{

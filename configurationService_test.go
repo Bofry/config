@@ -85,7 +85,7 @@ func initializekubernetesEnvironment() {
 }
 
 func initializeArgs() {
-	os.Args = []string{"example", "--redis-db", "32"}
+	os.Args = []string{"example", "-redis-db", "32"}
 
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 }

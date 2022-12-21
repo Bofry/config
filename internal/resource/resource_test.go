@@ -8,7 +8,7 @@ import (
 
 type config struct {
 	ResString string `resource:".RES_STR"`
-	ResInt    int    `resource:".RES_INT,required"`
+	ResInt    int    `resource:"*.RES_INT"`
 	ResBytes  []byte `resource:".RES_BIN"`
 }
 
