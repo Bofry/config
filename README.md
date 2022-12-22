@@ -168,6 +168,12 @@ type Config struct {
 
 
 $~$
+### **.env Files**
+⠿ The .env files same as **Environment Variables**.
+> 📝 The .env file WILL NOT OVERRIDE an environment variable that already exists. To consider .env file to set dev variable or sensible defaults.
+
+
+$~$
 ### **Resource Files**
 ⠿ The following **Config** structure will import content from file **VERSION**. The tag text `resource:"VERSION,required"` use the flag *required* indicates the file **VERSION** is required. It will get exception if the file doesn't exist.
 ```go
