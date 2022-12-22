@@ -1,9 +1,9 @@
-[ZH](README_zh.md)
+[EN](README.md)
 
 config
 =========
 
-## **Synopsis**
+## **使用方式**
 
 ```go
 package main
@@ -124,23 +124,24 @@ func main() {
 }
 ```
 
-$~$
-## **Struct Tag Denotation**
-
-| configuration type    | struct tag | tag flags  | ConfigurationService method    | example |
-|:----------------------|:-----------|:-----------|:-------------------------------|:--------|
-| environment variables | `env`      | *required* | LoadEnvironmentVariables()     | `env:"CACHE_ADDRESS,required"` -or- `env:"*CACHE_ADDRESS"`
-| .env files            | `env`      | *required* | LoadDotEnv(), LoadDotEnvFile() | `env:"CACHE_ADDRESS,required"` -or- `env:"*CACHE_ADDRESS"`
-| json files            | `json`     | --         | LoadJsonFile()                 | `json:"LISTEN_PORT"`
-| yaml files            | `yaml`     | --         | LoadYamlFile()                 | `yaml:"LISTEN_PORT"`
-| binary reource files  | `resource` | *required* | LoadResource()                 | `resource:"VERSION,required"` -or- `resource:"*VERSION"`
-| text reource files    | `resource` | *required* | LoadResource()                 | `resource:"VERSION,required"` -or- `resource:"*VERSION"`
-| command arguments     | `arg`      | --         | LoadCommandArguments()         | `arg:"SERVER_NAME"` -or- `arg:"SERVER_NAME;specify server name"`
-
 
 $~$
-### **Environment Variables**
-⠿ The following **Config** structure will import environment variables `CACHE_HOST`, `CACHE_PASSWORD`, and `CACHE_DB`. The tag text `env:"CACHE_HOST,required"` use the flag *required* indicates the environment variable `CACHE_HOST` is required. It will get exception if the variable doesn't be assgined.
+## **Struct Tag 標記**
+
+| 適用配置類型  | struct tag | tag flags  | 範例 |
+|:-------------|:-----------|:-----------|:--------|
+| 環境變數     | `env`      | *required* | `env:"CACHE_ADDRESS,required"` -或- `env:"*CACHE_ADDRESS"`
+| .env 檔案    | `env`      | *required* | `env:"CACHE_ADDRESS,required"` -或- `env:"*CACHE_ADDRESS"`
+| json 檔案    | `json`     | --         | `json:"LISTEN_PORT"`
+| yaml 檔案    | `yaml`     | --         | `yaml:"LISTEN_PORT"`
+| 二進制檔案   | `resource` | *required* | `resource:"VERSION,required"` -或- `resource:"*VERSION"`
+| 文字檔案     | `resource` | *required* | `resource:"VERSION,required"` -或- `resource:"*VERSION"`
+| 命令列參數   | `arg`      | --         | `arg:"SERVER_NAME"` -或- `arg:"SERVER_NAME;specify server name"`
+
+
+$~$
+### **環境變數**
+⠿ 下面的 **Config** 結構將匯入 `CACHE_HOST`、`CACHE_PASSWORD` 與 `CACHE_DB` 環境變數。其中標記 `env:"CACHE_HOST,required"` 的項目設定了 *required* 旗標，指示 `CACHE_HOST` 環境變數是必要的，若找不到則會抛出例外。
 ```go
 type Config struct {
   CacheHost     string `env:"CACHE_HOST,required"`
@@ -148,7 +149,7 @@ type Config struct {
   CacheDB       int    `env:"CACHE_DB"`
 }
 ```
-The tag text `env:"CACHE_HOST,required"` can be switch as `env:"*CACHE_HOST"` as well. Put the symbol "`*`" in front of the name is equivalent to appending `required` to tag flag part. 
+`env:"CACHE_HOST,required"` 標記方式能夠轉換為 `env:"*CACHE_HOST"` 表示。下面的表示方式與前者相同。
 ```go
 type Config struct {
   CacheHost     string `env:"*CACHE_HOST"`
@@ -159,25 +160,25 @@ type Config struct {
 
 
 $~$
-### **Resource Files**
-⠿ The following **Config** structure will import content from file **VERSION**. The tag text `resource:"VERSION,required"` use the flag *required* indicates the file **VERSION** is required. It will get exception if the file doesn't exist.
+### **資源檔**
+⠿ 下面的 **Config** 結構將匯入 **VERSION** 檔案的內容。其中標記 `resource:"VERSION,required"` 的項目設定了 *required* 旗標，指示 **VERSION** 檔案是必要的，若找不到則會抛出例外。
 ```go
 type Config struct {
   AppVersion string `resource:"VERSION,required"`
 }
 ```
-The tag text `resource:"VERSION,required"` can be switch as `resource:"*VERSION"` as well. Put the symbol "`*`" in front of the name is equivalent to appending `required` to tag flag part. 
+`resource:"VERSION,required"` 標記方式能夠轉換為 `resource:"*VERSION"` 表示。下面的表示方式與前者相同。 
 ```go
 type Config struct {
   AppVersion string `resource:"*VERSION"`
 }
 ```
-> 📝 The name can compose by any unicode except `NUL`, `\`, `/`, `:`, `*`, `?`, `"`, `<`, `>`, `|`. Also, no space character at the start or end, and no period at the end.
+> 📝 資源名稱接受任何 unicode 字元，但不包含 `NUL`、`\`、`/`、`:`、`*`、`?`、`"`、`<`、`>`、`|` 等字元。且不能使用空白字元作為開頭與結尾、結尾不能是 "`.`"。
 
 
 $~$
-### **Command Arguments**
-⠿ The following **Config** structure will import command arguments `cache-host`, `cache-passowrd`, and `cache-db`. The tag text `arg:"cache-host;the cache server address and port"` separated by symbol "`;`" to two parts. The name part and the usage text part for help.
+### **命令列參數**
+⠿ 下面的 **Config** 結構將匯入命令列參數 `cache-host`、`cache-passowrd` 與 `cache-db`。其中 `arg:"cache-host;the cache server address and port"` 標記使用分號 "`;`" 連接名稱部份與使用說明部份；使用說明可以在啟動命令傳入 `-help` 輸出。
 ```go
 type Config struct {
 	CacheHost     string `arg:"cache-host;the cache server address and port"`
@@ -186,13 +187,13 @@ type Config struct {
 }
 ```
 
-> 📝 The name can compose by `A-Z a-z 0-9 _ -`.
+> 📝 參數名稱僅接受下面字元 `A-Z a-z 0-9 _ -` 組成。
 > 
-> ⛔ Don't name arg as `help`.  
+> ⛔ 不要使用 `help` 作為參數名稱。  
 
 
 $~$
-### **Dependency**
+### **相依套件**
 - Yaml - https://godoc.org/gopkg.in/yaml.v2
 - Json - https://golang.org/pkg/encoding/json/
 - dotenv - https://github.com/joho/godotenv
