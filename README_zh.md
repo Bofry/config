@@ -9,7 +9,10 @@ config
 package main
 
 import (
+	"flag"
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/Bofry/config"
 )
