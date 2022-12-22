@@ -6,10 +6,10 @@ config
 ## **Synopsis**
 
 ```go
+// main.go
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -34,14 +34,6 @@ func init() {
 		os.Setenv("K8S_REDIS_HOST", "demo-kubernetes:6379")
 		os.Setenv("K8S_REDIS_PASSWORD", "p@ssw0rd")
 		os.Setenv("K8S_REDIS_DB", "6")
-	}
-	// set command line arguments
-	{
-		// NOTE: you can run the following commans in bash
-		// go build -o example
-		// ./example -redis-db=32
-		os.Args = []string{"example", "-redis-db", "32"}
-		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	}
 	// generate .env
 	{
@@ -126,6 +118,28 @@ func main() {
 	// Version       = "v1.0.2"
 }
 ```
+Open your terminal and execute the following command:
+- Bash
+	```bash
+	$ go build -o example
+	$ ./example -redis-db=32
+	```
+- Dos
+	```dos
+	C:\> go build -o example.exe
+	C:\> example.exe -redis-db=32
+	```
+You will get:
+```
+RedisHost     = "demo-kubernetes:6379"
+RedisPassword = "p@ssw0rd"
+RedisDB       = 32
+RedisPoolSize = 50
+Workspace     = "demo_prod"
+Tags          = ["demo" "test"]
+Version       = "v1.0.2"
+```
+
 
 $~$
 ## **Struct Tag Denotation**
