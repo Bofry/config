@@ -108,14 +108,6 @@ func main() {
 	fmt.Printf("Workspace     = %q\n", conf.Workspace)
 	fmt.Printf("Tags          = %q\n", conf.Tags)
 	fmt.Printf("Version       = %q\n", conf.Version)
-	// Output:
-	// RedisHost     = "demo-kubernetes:6379"
-	// RedisPassword = "p@ssw0rd"
-	// RedisDB       = 32
-	// RedisPoolSize = 50
-	// Workspace     = "demo_prod"
-	// Tags          = ["demo" "test"]
-	// Version       = "v1.0.2"
 }
 ```
 打開終端機，執行下面命令：
