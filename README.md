@@ -35,7 +35,7 @@ func init() {
 	// set command line arguments
 	{
 		// NOTE: you can run the following commans in bash
-		// go build -o example main.go
+		// go build -o example
 		// ./example -redis-db=32
 		os.Args = []string{"example", "-redis-db", "32"}
 		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
