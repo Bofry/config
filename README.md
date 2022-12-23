@@ -158,7 +158,7 @@ $~$
 > 
 > 📝 If you want reserve the start "`*`" in name and keep the setting to optional, to append the blank flag "`_`" to tag.
 > 
-> 📝 The nested struct on tag **env**, **resource**, and **arg** IS NOT SUPPORTED. And field type can be defined as `bool`, `int`, `uint`, `float`, `string`, `time.Duration`, `time.Time`, `url.URL`, `net.IP`, `[]bool`, `[]int`, `[]uint`, `[]float`, `[]string`, `[]time.Duration`, `[]time.Time`, `[]url.URL`, `[]net.IP`, `bytes.Buffer`, `json.RawMessage`, or `github.com/Bofry/types.RawContent`.
+> 📝 The nested struct on tag **env**, **resource**, and **arg** ARE NOT SUPPORTED. And field type can be defined as `bool`, `int`, `uint`, `float`, `string`, `time.Duration`, `time.Time`, `url.URL`, `net.IP`, `[]bool`, `[]int`, `[]uint`, `[]float`, `[]string`, `[]time.Duration`, `[]time.Time`, `[]url.URL`, `[]net.IP`, `bytes.Buffer`, `json.RawMessage`, or `github.com/Bofry/types.RawContent`.
 
 
 $~$
