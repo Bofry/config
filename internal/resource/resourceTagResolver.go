@@ -20,27 +20,28 @@ func ResourceTagResolver(fieldname, token string) (*structproto.Tag, error) {
 		}
 		name, flags := parts[0], parts[1:]
 
-		for ii := 0; ii < len(name); ii++ {
-			ch := name[ii]
-			switch ch {
-			case '*':
-				flags = append(flags, structproto.RequiredFlag)
-				continue
-			case '\\', '/', ':', '?', '"', '<', '>', '|':
-				return nil, fmt.Errorf("unknow symbol '%c' in resource name", ch)
-			}
+		if len(flags) == 0 {
+			for ii := 0; ii < len(name); ii++ {
+				ch := name[ii]
+				switch ch {
+				case '*':
+					flags = append(flags, structproto.RequiredFlag)
+					continue
+				}
 
-			name = name[ii:]
-			if strings.HasSuffix(name, ".") {
-				return nil, fmt.Errorf("unknow symbol '%c' at end in resource name", ch)
+				name = name[ii:]
+				break
 			}
-			if strings.HasSuffix(name, " ") {
-				return nil, fmt.Errorf("unknow symbol '%c' at end in resource name", ch)
-			}
-			if strings.HasPrefix(name, " ") {
-				return nil, fmt.Errorf("unknow symbol '%c' at start in resource name", ch)
-			}
-			break
+		}
+
+		if strings.HasSuffix(name, ".") {
+			return nil, fmt.Errorf("invalid period symbol at end in resource name")
+		}
+		if strings.HasSuffix(name, " ") {
+			return nil, fmt.Errorf("invalid space at end in resource name")
+		}
+		if strings.HasPrefix(name, " ") {
+			return nil, fmt.Errorf("invalid space at start in resource name")
 		}
 
 		var tag *structproto.Tag

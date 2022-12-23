@@ -138,13 +138,27 @@ $~$
 
 | configuration type    | struct tag | tag flags  | ConfigurationService method    | example |
 |:----------------------|:-----------|:-----------|:-------------------------------|:--------|
-| environment variables | `env`      | *required* | LoadEnvironmentVariables()     | `env:"CACHE_ADDRESS,required"` -or- `env:"*CACHE_ADDRESS"`
-| .env files            | `env`      | *required* | LoadDotEnv(), LoadDotEnvFile() | `env:"CACHE_ADDRESS,required"` -or- `env:"*CACHE_ADDRESS"`
-| json files            | `json`     | --         | LoadJsonFile()                 | `json:"LISTEN_PORT"`
-| yaml files            | `yaml`     | --         | LoadYamlFile()                 | `yaml:"LISTEN_PORT"`
-| binary reource files  | `resource` | *required* | LoadResource()                 | `resource:"VERSION,required"` -or- `resource:"*VERSION"`
-| text reource files    | `resource` | *required* | LoadResource()                 | `resource:"VERSION,required"` -or- `resource:"*VERSION"`
-| command arguments     | `arg`      | --         | LoadCommandArguments()         | `arg:"SERVER_NAME"` -or- `arg:"SERVER_NAME;specify server name"`
+| environment variables | `env`      | *required* | LoadEnvironmentVariables()     | `env:"CACHE_ADDRESS,required"` -or- `env:"*CACHE_ADDRESS"`         |
+| .env files            | `env`      | *required* | LoadDotEnv(), LoadDotEnvFile() | `env:"CACHE_ADDRESS,required"` -or- `env:"*CACHE_ADDRESS"`         |
+| json files            | `json`     | --         | LoadJsonFile()                 | `json:"LISTEN_PORT"`                                               |
+| yaml files            | `yaml`     | --         | LoadYamlFile()                 | `yaml:"LISTEN_PORT"`                                               |
+| binary reource files  | `resource` | *required* | LoadResource()                 | `resource:"VERSION,required"` -or- `resource:"*VERSION"`           |
+| text reource files    | `resource` | *required* | LoadResource()                 | `resource:"VERSION,required"` -or- `resource:"*VERSION"`           |
+| command arguments     | `arg`      | --         | LoadCommandArguments()         | `arg:"SERVER_NAME"` -or- `arg:"SERVER_NAME;specify server name"`   |
+
+> 📝 The `resource:"VERSION,required"` is equivalent to `resource:"*VERSION"`, but not equivalent to `resource:"*VERSION,required"`. For examples:
+> | tag                              | name     | flag       |
+> |:---------------------------------|:---------|:-----------|
+> | `resource:"VERSION,required"`    | VERSION  | `required` |
+> | `resource:"*VERSION"`            | VERSION  | `required` |
+> | `resource:"*VERSION,required"`   | *VERSION | `required` |
+> | `resource:"*VERSION,required,_"` | *VERSION | `required` |
+> | `resource:"*VERSION,_"`          | *VERSION | *none*     |
+> | `resource:"VERSION,_"`           | VERSION  | *none*     |
+> 
+> 📝 If you want reserve the start "`*`" in name and keep the setting to optional, to append the blank flag "`_`" to tag.
+> 
+> 📝 The nested struct on tag **env**, **resource**, and **arg** IS NOT SUPPORTED. And field type can be defined as `bool`, `int`, `uint`, `float`, `string`, `time.Duration`, `time.Time`, `url.URL`, `net.IP`, `[]bool`, `[]int`, `[]uint`, `[]float`, `[]string`, `[]time.Duration`, `[]time.Time`, `[]url.URL`, `[]net.IP`, `bytes.Buffer`, `json.RawMessage`, or `github.com/Bofry/types.RawContent`.
 
 
 $~$
@@ -157,7 +171,7 @@ type Config struct {
   CacheDB       int    `env:"CACHE_DB"`
 }
 ```
-The tag text `env:"CACHE_HOST,required"` can be switch as `env:"*CACHE_HOST"` as well. Put the symbol "`*`" in front of the name is equivalent to appending `required` to tag flag part. 
+The tag form `env:"CACHE_HOST,required"` also can be written as `env:"*CACHE_HOST"`. Put the symbol "`*`" in front of the name is equivalent to appending `required` to tag flag part. 
 ```go
 type Config struct {
   CacheHost     string `env:"*CACHE_HOST"`
@@ -181,13 +195,13 @@ type Config struct {
   AppVersion string `resource:"VERSION,required"`
 }
 ```
-The tag text `resource:"VERSION,required"` can be switch as `resource:"*VERSION"` as well. Put the symbol "`*`" in front of the name is equivalent to appending `required` to tag flag part. 
+The tag form `resource:"VERSION,required"` also can be written as `resource:"*VERSION"`. Put the symbol "`*`" in front of the name is equivalent to appending `required` to tag flag part. 
 ```go
 type Config struct {
   AppVersion string `resource:"*VERSION"`
 }
 ```
-> 📝 The name can compose by any unicode except `NUL`, `\`, `/`, `:`, `*`, `?`, `"`, `<`, `>`, `|`. Also, no space character at the start or end, and no period at the end.
+> 📝 The name can compose by any unicode but no space character at the start or end, and no period at the end.
 
 
 $~$
@@ -201,8 +215,6 @@ type Config struct {
 }
 ```
 
-> 📝 The name can compose by `A-Z a-z 0-9 _ -`.
-> 
 > ⛔ Don't name arg as `help`.  
 
 

@@ -136,15 +136,29 @@ Version       = "v1.0.2"
 $~$
 ## **Struct Tag 標記**
 
-| 適用配置類型  | struct tag | tag flags  | 範例 |
+| 適用配置類型  | struct tag | tag flags  | 範例    |
 |:-------------|:-----------|:-----------|:--------|
-| 環境變數     | `env`      | *required* | `env:"CACHE_ADDRESS,required"` -或- `env:"*CACHE_ADDRESS"`
-| .env 檔案    | `env`      | *required* | `env:"CACHE_ADDRESS,required"` -或- `env:"*CACHE_ADDRESS"`
-| json 檔案    | `json`     | --         | `json:"LISTEN_PORT"`
-| yaml 檔案    | `yaml`     | --         | `yaml:"LISTEN_PORT"`
-| 二進制檔案   | `resource` | *required* | `resource:"VERSION,required"` -或- `resource:"*VERSION"`
-| 文字檔案     | `resource` | *required* | `resource:"VERSION,required"` -或- `resource:"*VERSION"`
-| 命令列參數   | `arg`      | --         | `arg:"SERVER_NAME"` -或- `arg:"SERVER_NAME;specify server name"`
+| 環境變數     | `env`      | *required* | `env:"CACHE_ADDRESS,required"` -或- `env:"*CACHE_ADDRESS"`       |
+| .env 檔案    | `env`      | *required* | `env:"CACHE_ADDRESS,required"` -或- `env:"*CACHE_ADDRESS"`       |
+| json 檔案    | `json`     | --         | `json:"LISTEN_PORT"`                                             |
+| yaml 檔案    | `yaml`     | --         | `yaml:"LISTEN_PORT"`                                             |
+| 二進制檔案   | `resource` | *required* | `resource:"VERSION,required"` -或- `resource:"*VERSION"`          |
+| 文字檔案     | `resource` | *required* | `resource:"VERSION,required"` -或- `resource:"*VERSION"`          |
+| 命令列參數   | `arg`      | --         | `arg:"SERVER_NAME"` -或- `arg:"SERVER_NAME;specify server name"`  |
+
+> 📝 `resource:"VERSION,required"` 與 `resource:"*VERSION"` 是相同的，而 `resource:"*VERSION,required"` 則與前兩者不同。下面是舉例比較：
+> | 標記                             | name     | flag       |
+> |:---------------------------------|:---------|:-----------|
+> | `resource:"VERSION,required"`    | VERSION  | `required` |
+> | `resource:"*VERSION"`            | VERSION  | `required` |
+> | `resource:"*VERSION,required"`   | *VERSION | `required` |
+> | `resource:"*VERSION,required,_"` | *VERSION | `required` |
+> | `resource:"*VERSION,_"`          | *VERSION | *none*     |
+> | `resource:"VERSION,_"`           | VERSION  | *none*     |
+> 
+> 📝 若名稱需要保留開始的 "`*`" 且維持非必填指示，可以在 flaf 段加入空白 flag "`_`"。
+> 
+> 📝 **env**、**resource**、**arg** 等標記**不支援巢狀結構**，支援的欄位型別為：`bool`、`int`、`uint`、`float`、`string`、`time.Duration`、`time.Time`、`url.URL`、`net.IP`、`[]bool`、`[]int`、`[]uint`、`[]float`、`[]string`、`[]time.Duration`、`[]time.Time`、`[]url.URL`、`[]net.IP`、`bytes.Buffer`、`json.RawMessage`、`github.com/Bofry/types.RawContent`。
 
 
 $~$
@@ -187,7 +201,7 @@ type Config struct {
   AppVersion string `resource:"*VERSION"`
 }
 ```
-> 📝 資源名稱接受任何 unicode 字元，但不包含 `NUL`、`\`、`/`、`:`、`*`、`?`、`"`、`<`、`>`、`|` 等字元。且不能使用空白字元作為開頭與結尾、結尾不能是 "`.`"。
+> 📝 資源名稱接受任何 unicode 字元，但不能使用空白字元作為開頭與結尾、以及結尾不能是 "`.`"。
 
 
 $~$
@@ -201,8 +215,6 @@ type Config struct {
 }
 ```
 
-> 📝 參數名稱僅接受下面字元 `A-Z a-z 0-9 _ -` 組成。
-> 
 > ⛔ 不要使用 `help` 作為參數名稱。  
 
 
