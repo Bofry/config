@@ -18,5 +18,5 @@ func (fv *FlagValue) String() string {
 }
 
 func (fv *FlagValue) Set(v string) error {
-	return valuebinder.StringArgsBinder(fv.value).Bind(v)
+	return valuebinder.StringBinder(fv.value).Bind(v)
 }

@@ -1,5 +1,5 @@
-github.com/Bofry/structproto v0.1.0 h1:Zun2V0y9WsMtYPiyvoKZKzGjKzB9Gff/6TAFXJf1jA0=
-github.com/Bofry/structproto v0.1.0/go.mod h1:ExAR9NDYUXZOVlAJrz2oavvVxjaegV7Mb91HQcQYWLA=
+github.com/Bofry/structproto v0.2.0-alpha.20221227043020 h1:R/pdSosp1eZA+Dx8Mz316LYW4N6DbB0wRMQZr4e1duw=
+github.com/Bofry/structproto v0.2.0-alpha.20221227043020/go.mod h1:ExAR9NDYUXZOVlAJrz2oavvVxjaegV7Mb91HQcQYWLA=
 github.com/Bofry/types v0.1.0 h1:lEM+LcPWlC1ByerJlp0cZ4tCCosR9lemVDvu9kATV1Y=
 github.com/Bofry/types v0.1.0/go.mod h1:O0I2TpZ3YfKDgTnJO5zeaX9LO7vtdhGnwbz/oP4cKUw=
 github.com/cstockton/go-conv v0.0.0-20170524002450-66a2b2ba36e1 h1:h4OgDocdYHGiUh+zUEe4nFlb9ShoHUllqDefGaRoZFg=

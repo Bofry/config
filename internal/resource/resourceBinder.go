@@ -48,7 +48,7 @@ func (p *ResourceBinder) Bind(field structproto.FieldInfo, rv reflect.Value) err
 			rv.Set(reflect.ValueOf(buffer))
 			return nil
 		}
-		return valuebinder.BytesArgsBinder(rv).Bind(buffer)
+		return valuebinder.BytesBinder(rv).Bind(buffer)
 	}
 	return nil
 }

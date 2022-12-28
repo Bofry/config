@@ -33,7 +33,7 @@ func Process(prefix string, target interface{}) error {
 			table[name[len(prefix):]] = value
 		}
 	}
-	err = prototype.BindValues(table, valuebinder.BuildStringArgsBinder)
+	err = prototype.BindIterator(table, valuebinder.BuildStringBinder)
 	if err != nil {
 		return err
 	}
