@@ -2,6 +2,8 @@ package config
 
 import (
 	"flag"
+	"fmt"
+	"io"
 	"os"
 	"reflect"
 	"strings"
@@ -18,6 +20,18 @@ type DummyConfig struct {
 	Workspace     string   `env:"-"                yaml:"workspace"       arg:"workspace;the data workspace"`
 	Tags          []string `env:"TAG"`
 	Version       string   `resource:".VERSION"`
+}
+
+func (c *DummyConfig) Output(writer io.Writer) error {
+	fmt.Fprintf(writer, "RedisHost    : %v\n", c.RedisHost)
+	fmt.Fprintf(writer, "RedisPassword: %v\n", c.RedisPassword)
+	fmt.Fprintf(writer, "RedisDB      : %v\n", c.RedisDB)
+	fmt.Fprintf(writer, "RedisPoolSize: %v\n", c.RedisPoolSize)
+	fmt.Fprintf(writer, "Workspace    : %v\n", c.Workspace)
+	fmt.Fprintf(writer, "Tags         : %v\n", c.Tags)
+	fmt.Fprintf(writer, "Version      : %v\n", c.Version)
+
+	return nil
 }
 
 func TestConfigurationService(t *testing.T) {
@@ -40,7 +54,8 @@ func TestConfigurationService(t *testing.T) {
 		LoadYamlFile("config.yaml").
 		LoadYamlFile("config.${ENVIRONMENT}.yaml").
 		LoadCommandArguments().
-		LoadResource("")
+		LoadResource("").
+		Output()
 
 	var expectedRedisHost = "demo-kubernetes:6379"
 	if conf.RedisHost != expectedRedisHost {

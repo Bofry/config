@@ -106,7 +106,7 @@ func (service *ConfigurationService) LoadFile(fullpath string, unmarshal Unmarsh
 	if err != nil {
 		panic(fmt.Errorf("config: %#v\n", err))
 	}
-	return nil
+	return service
 }
 
 func (service *ConfigurationService) LoadBytes(buffer []byte, unmarshal UnmarshalFunc) *ConfigurationService {
@@ -114,5 +114,19 @@ func (service *ConfigurationService) LoadBytes(buffer []byte, unmarshal Unmarsha
 	if err != nil {
 		panic(fmt.Errorf("config: %#v\n", err))
 	}
-	return nil
+	return service
+}
+
+func (service *ConfigurationService) Output() {
+	err := __DefaultPrinter.Print(service.target)
+	if err != nil {
+		panic(fmt.Errorf("config: %#v\n", err))
+	}
+}
+
+func (service *ConfigurationService) OutputWithPrinter(printer Printer) {
+	err := printer.Print(service.target)
+	if err != nil {
+		panic(fmt.Errorf("config: %#v\n", err))
+	}
 }
