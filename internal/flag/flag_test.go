@@ -3,6 +3,7 @@ package flag
 import (
 	"flag"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -70,26 +71,21 @@ func TestLoad(t *testing.T) {
 	c := config{
 		RedisSecret: "p@ssw0rd",
 		Workspace:   "demo_test",
+		RedisDB:     1,
 	}
 	err := Process(&c)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if c.RedisHost != "192.168.56.53:6379" {
-		t.Errorf("assert 'config.RedisHost':: expected '%v', got '%v'", "192.168.56.53:6379", c.RedisHost)
+	expected := config{
+		RedisHost:   "192.168.56.53:6379",
+		RedisSecret: "foobared",
+		RedisDB:     3,
+		Workspace:   "demo_test",
+		Role:        ROLE_USER,
 	}
-	if c.RedisSecret != "foobared" {
-		t.Errorf("assert 'config.RedisSecret':: expected '%v', got '%v'", "foobared", c.RedisSecret)
-	}
-	if c.RedisDB != 3 {
-		t.Errorf("assert 'config.RedisDB':: expected '%v', got '%v'", 3, c.RedisDB)
-	}
-	if c.Workspace != "demo_test" {
-		t.Errorf("assert 'config.Workspace':: expected '%v', got '%v'", "demo_test", c.Workspace)
-	}
-	var expectedRole = ROLE_USER
-	if c.Role != expectedRole {
-		t.Errorf("assert 'config.Role':: expected '%v', got '%v'", expectedRole, c.Role)
+	if !reflect.DeepEqual(expected, c) {
+		t.Errorf("assert 'config':: expected '%#+v', got '%#+v'", expected, c)
 	}
 }

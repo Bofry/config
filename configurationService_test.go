@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Bofry/structproto"
 	"gopkg.in/yaml.v2"
 )
 
@@ -57,33 +58,17 @@ func TestConfigurationService(t *testing.T) {
 		LoadResource("").
 		Output()
 
-	var expectedRedisHost = "demo-kubernetes:6379"
-	if conf.RedisHost != expectedRedisHost {
-		t.Errorf("assert 'config.RedisHost':: expected '%v', got '%v'", expectedRedisHost, conf.RedisHost)
+	expected := DummyConfig{
+		RedisHost:     "demo-kubernetes:6379",
+		RedisPassword: "p@ssw0rd",
+		RedisDB:       32,
+		RedisPoolSize: 50,
+		Workspace:     "demo_prod",
+		Tags:          []string{"demo", "test"},
+		Version:       "v1.0.2",
 	}
-	var expectedRedisPassword = "p@ssw0rd"
-	if conf.RedisPassword != expectedRedisPassword {
-		t.Errorf("assert 'config.RedisPassword':: expected '%v', got '%v'", expectedRedisPassword, conf.RedisPassword)
-	}
-	var expectedRedisDB = 32
-	if conf.RedisDB != expectedRedisDB {
-		t.Errorf("assert 'config.RedisDB':: expected '%v', got '%v'", expectedRedisDB, conf.RedisDB)
-	}
-	var expectedRedisPoolSize = 50
-	if conf.RedisPoolSize != expectedRedisPoolSize {
-		t.Errorf("assert 'config.RedisPoolSize':: expected '%v', got '%v'", expectedRedisPoolSize, conf.RedisPoolSize)
-	}
-	var expectedWorkspace = "demo_prod"
-	if conf.Workspace != expectedWorkspace {
-		t.Errorf("assert 'config.Workspace':: expected '%v', got '%v'", expectedWorkspace, conf.Workspace)
-	}
-	var expectedTags = []string{"demo", "test"}
-	if !reflect.DeepEqual(conf.Tags, expectedTags) {
-		t.Errorf("assert 'config.Tags':: expected '%+v', got '%+v'", expectedTags, conf.Tags)
-	}
-	var expectedVersion = "v1.0.2"
-	if conf.Version != expectedVersion {
-		t.Errorf("assert 'config.Version':: expected '%v', got '%v'", expectedVersion, conf.Version)
+	if !reflect.DeepEqual(expected, conf) {
+		t.Errorf("assert 'DummyConfig':: expected '%#+v', got '%#+v'", expected, conf)
 	}
 }
 
@@ -170,28 +155,54 @@ func TestConfigurationService_LoadFile(t *testing.T) {
 	NewConfigurationService(&conf).
 		LoadFile("config.yaml", yaml.Unmarshal)
 
-	var expectedRedisHost = ""
-	if conf.RedisHost != expectedRedisHost {
-		t.Errorf("assert 'config.RedisHost':: expected '%v', got '%v'", expectedRedisHost, conf.RedisHost)
+	expected := DummyConfig{
+		RedisHost:     "",
+		RedisPassword: "",
+		RedisDB:       3,
+		RedisPoolSize: 10,
+		Workspace:     "demo_test",
+		Version:       "",
 	}
-	var expectedRedisPassword = ""
-	if conf.RedisPassword != expectedRedisPassword {
-		t.Errorf("assert 'config.RedisPassword':: expected '%v', got '%v'", expectedRedisPassword, conf.RedisPassword)
+	if !reflect.DeepEqual(expected, conf) {
+		t.Errorf("assert 'DummyConfig':: expected '%#+v', got '%#+v'", expected, conf)
 	}
-	var expectedRedisDB = 3
-	if conf.RedisDB != expectedRedisDB {
-		t.Errorf("assert 'config.RedisDB':: expected '%v', got '%v'", expectedRedisDB, conf.RedisDB)
+}
+
+func TestConfigurationService_Map(t *testing.T) {
+	t.Setenv("Environment", "staging")
+
+	conf := DummyConfig{
+		RedisHost:     "demo-kubernetes:6379",
+		RedisPassword: "p@ssw0rd",
+		RedisDB:       32,
+		RedisPoolSize: 50,
+		Workspace:     "demo_${Environment}",
+		Tags:          []string{"demo", "test"},
+		Version:       "v1.0.2",
 	}
-	var expectedRedisPoolSize = 10
-	if conf.RedisPoolSize != expectedRedisPoolSize {
-		t.Errorf("assert 'config.RedisPoolSize':: expected '%v', got '%v'", expectedRedisPoolSize, conf.RedisPoolSize)
+
+	NewConfigurationService(&conf).
+		Map(func(field structproto.FieldInfo, rv reflect.Value) error {
+			switch rv.Kind() {
+			case reflect.String:
+				if !rv.IsZero() {
+					val := os.ExpandEnv(rv.String())
+					rv.SetString(val)
+				}
+			}
+			return nil
+		})
+
+	expected := DummyConfig{
+		RedisHost:     "demo-kubernetes:6379",
+		RedisPassword: "p@ssw0rd",
+		RedisDB:       32,
+		RedisPoolSize: 50,
+		Workspace:     "demo_staging",
+		Tags:          []string{"demo", "test"},
+		Version:       "v1.0.2",
 	}
-	var expectedWorkspace = "demo_test"
-	if conf.Workspace != expectedWorkspace {
-		t.Errorf("assert 'config.Workspace':: expected '%v', got '%v'", expectedWorkspace, conf.Workspace)
-	}
-	var expectedVersion = ""
-	if conf.Version != expectedVersion {
-		t.Errorf("assert 'config.Version':: expected '%v', got '%v'", expectedVersion, conf.Version)
+	if !reflect.DeepEqual(expected, conf) {
+		t.Errorf("assert 'DummyConfig':: expected '%#+v', got '%#+v'", expected, conf)
 	}
 }

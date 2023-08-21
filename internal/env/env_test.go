@@ -16,12 +16,11 @@ type config struct {
 }
 
 func TestLoad(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("REDIS_HOST", "192.168.56.53")
-	os.Setenv("RESID_SECRET", "foobar")
-	os.Setenv("REDIS_DB", "3")
-	os.Setenv("WORKSPACE", "demo_test")
-	os.Setenv("TAG", "demo,test")
+	t.Setenv("REDIS_HOST", "192.168.56.53")
+	t.Setenv("RESID_SECRET", "foobar")
+	t.Setenv("REDIS_DB", "3")
+	t.Setenv("WORKSPACE", "demo_test")
+	t.Setenv("TAG", "demo,test")
 
 	c := config{}
 	err := Process("", &c)
@@ -29,38 +28,24 @@ func TestLoad(t *testing.T) {
 		t.Error(err)
 	}
 
-	var expectedRedisHost = "192.168.56.53"
-	if c.RedisHost != expectedRedisHost {
-		t.Errorf("assert 'config.RedisHost':: expected '%v', got '%v'", expectedRedisHost, c.RedisHost)
+	expected := config{
+		RedisHost:    "192.168.56.53",
+		RedisSecret:  "foobar",
+		RedisDB:      3,
+		Workspace:    "demo_test",
+		IgnoredField: "",
+		Tags:         []string{"demo", "test"},
 	}
-	var expectedRedisSecret = "foobar"
-	if c.RedisSecret != expectedRedisSecret {
-		t.Errorf("assert 'config.RedisSecret':: expected '%v', got '%v'", expectedRedisSecret, c.RedisSecret)
-	}
-	var expectedRedisDB = 3
-	if c.RedisDB != expectedRedisDB {
-		t.Errorf("assert 'config.RedisDB':: expected '%v', got '%v'", expectedRedisDB, c.RedisDB)
-	}
-	var expectedWorkspace = "demo_test"
-	if c.Workspace != expectedWorkspace {
-		t.Errorf("assert 'config.Workspace':: expected '%v', got '%v'", expectedWorkspace, c.Workspace)
-	}
-	var expectedIgnoredField = ""
-	if c.IgnoredField != expectedIgnoredField {
-		t.Errorf("assert 'config.IgnoredField':: expected '%v', got '%v'", expectedIgnoredField, c.IgnoredField)
-	}
-	var expectedTags = []string{"demo", "test"}
-	if !reflect.DeepEqual(c.Tags, expectedTags) {
-		t.Errorf("assert 'config.Tags':: expected '%+v', got '%+v'", expectedTags, c.Tags)
+	if !reflect.DeepEqual(expected, c) {
+		t.Errorf("assert 'config':: expected '%#+v', got '%#+v'", expected, c)
 	}
 }
 
 func TestLoad_WithPrefix(t *testing.T) {
-	os.Clearenv()
-	os.Setenv("K8S_REDIS_HOST", "192.168.56.53")
-	os.Setenv("K8S_RESID_SECRET", "foobar")
-	os.Setenv("K8S_REDIS_DB", "3")
-	os.Setenv("K8S_WORKSPACE", "demo_test")
+	t.Setenv("K8S_REDIS_HOST", "192.168.56.53")
+	t.Setenv("K8S_RESID_SECRET", "foobar")
+	t.Setenv("K8S_REDIS_DB", "3")
+	t.Setenv("K8S_WORKSPACE", "demo_test")
 
 	c := config{}
 	err := Process("K8S", &c)
@@ -68,21 +53,14 @@ func TestLoad_WithPrefix(t *testing.T) {
 		t.Error(err)
 	}
 
-	var expectedRedisHost = "192.168.56.53"
-	if c.RedisHost != expectedRedisHost {
-		t.Errorf("assert 'config.RedisHost':: expected '%v', got '%v'", expectedRedisHost, c.RedisHost)
+	expected := config{
+		RedisHost:   "192.168.56.53",
+		RedisSecret: "foobar",
+		RedisDB:     3,
+		Workspace:   "demo_test",
 	}
-	var expectedRedisSecret = "foobar"
-	if c.RedisSecret != expectedRedisSecret {
-		t.Errorf("assert 'config.RedisSecret':: expected '%v', got '%v'", expectedRedisSecret, c.RedisSecret)
-	}
-	var expectedRedisDB = 3
-	if c.RedisDB != expectedRedisDB {
-		t.Errorf("assert 'config.RedisDB':: expected '%v', got '%v'", expectedRedisDB, c.RedisDB)
-	}
-	var expectedWorkspace = "demo_test"
-	if c.Workspace != expectedWorkspace {
-		t.Errorf("assert 'config.Workspace':: expected '%v', got '%v'", expectedWorkspace, c.Workspace)
+	if !reflect.DeepEqual(expected, c) {
+		t.Errorf("assert 'config':: expected '%#+v', got '%#+v'", expected, c)
 	}
 }
 
@@ -94,29 +72,16 @@ func TestLoadDotEnv(t *testing.T) {
 		t.Error(err)
 	}
 
-	var expectedRedisHost = "192.168.56.53"
-	if c.RedisHost != expectedRedisHost {
-		t.Errorf("assert 'config.RedisHost':: expected '%v', got '%v'", expectedRedisHost, c.RedisHost)
+	expected := config{
+		RedisHost:    "192.168.56.53",
+		RedisSecret:  "foobar",
+		RedisDB:      3,
+		Workspace:    "demo_test",
+		IgnoredField: "",
+		Tags:         []string{"demo", "test"},
 	}
-	var expectedRedisSecret = "foobar"
-	if c.RedisSecret != expectedRedisSecret {
-		t.Errorf("assert 'config.RedisSecret':: expected '%v', got '%v'", expectedRedisSecret, c.RedisSecret)
-	}
-	var expectedRedisDB = 3
-	if c.RedisDB != expectedRedisDB {
-		t.Errorf("assert 'config.RedisDB':: expected '%v', got '%v'", expectedRedisDB, c.RedisDB)
-	}
-	var expectedWorkspace = "demo_test"
-	if c.Workspace != expectedWorkspace {
-		t.Errorf("assert 'config.Workspace':: expected '%v', got '%v'", expectedWorkspace, c.Workspace)
-	}
-	var expectedIgnoredField = ""
-	if c.IgnoredField != expectedIgnoredField {
-		t.Errorf("assert 'config.IgnoredField':: expected '%v', got '%v'", expectedIgnoredField, c.IgnoredField)
-	}
-	var expectedTags = []string{"demo", "test"}
-	if !reflect.DeepEqual(c.Tags, expectedTags) {
-		t.Errorf("assert 'config.Tags':: expected '%+v', got '%+v'", expectedTags, c.Tags)
+	if !reflect.DeepEqual(expected, c) {
+		t.Errorf("assert 'config':: expected '%#+v', got '%#+v'", expected, c)
 	}
 }
 
@@ -130,28 +95,15 @@ func TestLoadDotEnvFile(t *testing.T) {
 		t.Error(err)
 	}
 
-	var expectedRedisHost = "10.10.171.6"
-	if c.RedisHost != expectedRedisHost {
-		t.Errorf("assert 'config.RedisHost':: expected '%v', got '%v'", expectedRedisHost, c.RedisHost)
+	expected := config{
+		RedisHost:    "10.10.171.6",
+		RedisSecret:  "foobar",
+		RedisDB:      3,
+		Workspace:    "demo_test",
+		IgnoredField: "",
+		Tags:         []string{"demo", "test"},
 	}
-	var expectedRedisSecret = "foobar"
-	if c.RedisSecret != expectedRedisSecret {
-		t.Errorf("assert 'config.RedisSecret':: expected '%v', got '%v'", expectedRedisSecret, c.RedisSecret)
-	}
-	var expectedRedisDB = 3
-	if c.RedisDB != expectedRedisDB {
-		t.Errorf("assert 'config.RedisDB':: expected '%v', got '%v'", expectedRedisDB, c.RedisDB)
-	}
-	var expectedWorkspace = "demo_test"
-	if c.Workspace != expectedWorkspace {
-		t.Errorf("assert 'config.Workspace':: expected '%v', got '%v'", expectedWorkspace, c.Workspace)
-	}
-	var expectedIgnoredField = ""
-	if c.IgnoredField != expectedIgnoredField {
-		t.Errorf("assert 'config.IgnoredField':: expected '%v', got '%v'", expectedIgnoredField, c.IgnoredField)
-	}
-	var expectedTags = []string{"demo", "test"}
-	if !reflect.DeepEqual(c.Tags, expectedTags) {
-		t.Errorf("assert 'config.Tags':: expected '%+v', got '%+v'", expectedTags, c.Tags)
+	if !reflect.DeepEqual(expected, c) {
+		t.Errorf("assert 'config':: expected '%#+v', got '%#+v'", expected, c)
 	}
 }

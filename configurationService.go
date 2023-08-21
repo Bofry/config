@@ -10,6 +10,7 @@ import (
 	"github.com/Bofry/config/internal/json"
 	"github.com/Bofry/config/internal/resource"
 	"github.com/Bofry/config/internal/yaml"
+	"github.com/Bofry/structproto"
 )
 
 type ConfigurationService struct {
@@ -115,6 +116,15 @@ func (service *ConfigurationService) LoadBytes(buffer []byte, unmarshal Unmarsha
 		panic(fmt.Errorf("config: %#v\n", err))
 	}
 	return service
+}
+
+func (service *ConfigurationService) Map(mapper structproto.StructMapper) error {
+	prototype, err := structproto.Prototypify(service.target,
+		&structproto.StructProtoResolveOption{})
+	if err != nil {
+		return err
+	}
+	return prototype.Map(mapper)
 }
 
 func (service *ConfigurationService) Output() {
