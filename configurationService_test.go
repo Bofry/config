@@ -206,3 +206,33 @@ func TestConfigurationService_Map(t *testing.T) {
 		t.Errorf("assert 'DummyConfig':: expected '%#+v', got '%#+v'", expected, conf)
 	}
 }
+
+func TestConfigurationService_ExpandEnv(t *testing.T) {
+	t.Setenv("Environment", "staging")
+
+	conf := DummyConfig{
+		RedisHost:     "demo-kubernetes:6379",
+		RedisPassword: "p@ssw0rd",
+		RedisDB:       32,
+		RedisPoolSize: 50,
+		Workspace:     "demo_${Environment}",
+		Tags:          []string{"demo", "test"},
+		Version:       "v1.0.2",
+	}
+
+	NewConfigurationService(&conf).
+		ExpandEnv("")
+
+	expected := DummyConfig{
+		RedisHost:     "demo-kubernetes:6379",
+		RedisPassword: "p@ssw0rd",
+		RedisDB:       32,
+		RedisPoolSize: 50,
+		Workspace:     "demo_staging",
+		Tags:          []string{"demo", "test"},
+		Version:       "v1.0.2",
+	}
+	if !reflect.DeepEqual(expected, conf) {
+		t.Errorf("assert 'DummyConfig':: expected '%#+v', got '%#+v'", expected, conf)
+	}
+}
