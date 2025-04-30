@@ -4,31 +4,6 @@
 
 A highly customizable Go configuration management library that supports multiple data sources.
 
-## Quick Start
-
-### Installing the Package
-
-First, install the config package using the `go get` command:
-
-```bash
-go get -u github.com/Bofry/config
-```
-
-### Running Your Application
-
-After creating your application, open your terminal and execute:
-
-```bash
-# Run directly with command-line arguments
-go run main.go -listen-address=":8080"
-
-# Or build and run
-go build
-./yourapp -listen-address=":8080"
-```
-
-You can pass any command-line argument that you've defined with `arg` tags in your configuration structure.
-
 ## Key Features
 
 - Support for multiple configuration sources: environment variables, .env files, YAML/JSON files, command-line arguments, and resource files
@@ -122,6 +97,31 @@ func main() {
  // Start your application...
 }
 ```
+
+## Quick Start
+
+### Installing the Package
+
+First, install the config package using the `go get` command:
+
+```bash
+go get -u github.com/Bofry/config
+```
+
+### Running Your Application
+
+After creating your application, open your terminal and execute:
+
+```bash
+# Run directly with command-line arguments
+go run main.go -listen-address=":8080"
+
+# Or build and run
+go build
+./yourapp -listen-address=":8080"
+```
+
+You can pass any command-line argument that you've defined with `arg` tags in your configuration structure.
 
 ## Struct Tag Syntax
 

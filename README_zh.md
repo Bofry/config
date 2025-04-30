@@ -40,88 +40,83 @@ go build
 
 ## 使用範例
 
+以下範例展示了使用多種來源進行現代化配置管理的方法：
+
 ```go
+// main.go
 package main
 
 import (
  "fmt"
  "github.com/Bofry/config"
- "github.com/Bofry/structproto"
- "os"
- "reflect"
 )
 
-type (
- ServiceConfig struct {
-  Environment string `env:"Environment"`
-
-  // Core service information
-  Version     string `resource:".VERSION"`
-  Signature   string `resource:".SIGNATURE"`
-  ServiceName string `resource:".SERVICE_NAME"`
-
-  // HTTP server settings
-  ListenAddress  string `yaml:"ListenAddress"  arg:"listen-address;combination of IP address and listen port"`
-  EnableCompress bool   `yaml:"UseCompress"    arg:"use-compress;indicates if response compression is enabled"`
-  ServerName     string `yaml:"ServerName"`
-
-  // Telemetry settings
-  JaegerTraceUrl string `yaml:"JaegerTraceUrl"`
-
-  // External services
-  CacheStoreIp   string `yaml:"Cache_Store_Ip"        env:"Cache_Store_Ip"`
-  CacheStorePort int    `yaml:"Cache_Store_Port"      env:"Cache_Store_Port"`
-  APIEndpoint    string `yaml:"API_Endpoint"          env:"API_Endpoint"`
-  MessageBroker  string `yaml:"Message_Broker_Address" env:"Message_Broker_Address"`
- }
-)
-
-func NewConfiguration() *ServiceConfig {
- conf := &ServiceConfig{}
- config.NewConfigurationService(conf).
-  LoadYamlFile("config.yaml").
-  LoadYamlFile("config.${Environment}.yaml").
-  LoadEnvironmentVariables("").
-  LoadResource(".").
-  LoadResource(".conf/${Environment}").
-  LoadCommandArguments().
-  Map(func(field structproto.FieldInfo, rv reflect.Value) error {
-   switch rv.Kind() {
-   case reflect.String:
-    if !rv.IsZero() {
-     var hasEmpty bool = false
-     val := os.Expand(rv.String(), func(s string) string {
-      v := os.Getenv(s)
-      if len(v) == 0 {
-       hasEmpty = true
-      }
-      return v
-     })
-     if hasEmpty {
-      rv.SetString("")
-     } else {
-      rv.SetString(val)
-     }
-    }
-   }
-   return nil
-  })
-
- return conf
+// ServiceConfig 定義應用程式配置結構
+type ServiceConfig struct {
+ // 資料庫連接設定
+ DatabaseHost     string   `env:"DATABASE_HOST"       yaml:"databaseHost"       arg:"database-host;資料庫伺服器位址和連接埠"`
+ DatabasePassword string   `env:"DATABASE_PASSWORD"   yaml:"databasePassword"   arg:"database-password;資料庫密碼"`
+ DatabaseName     int      `env:"DATABASE_NAME"       yaml:"databaseName"       arg:"database-name;資料庫名稱"`
+ ConnectionPool   int      `env:"-"                   yaml:"connectionPool"`
+ 
+ // 應用程式設定
+ Workspace        string   `env:"-"                   yaml:"workspace"          arg:"workspace;應用程式工作目錄"`
+ Tags             []string `env:"APP_TAGS"`
+ Version          string   `resource:".VERSION"`
+ 
+ // 服務設定
+ ServicePort      int      `env:"SERVICE_PORT"        yaml:"servicePort"        arg:"service-port;服務監聽連接埠"`
+ LogLevel         string   `env:"LOG_LEVEL"           yaml:"logLevel"           arg:"log-level;日誌級別(debug, info, warn, error)"`
 }
 
 func main() {
- // Initialize configuration
- config := NewConfiguration()
+ // 初始化配置
+ conf := &ServiceConfig{}
  
- // Use configuration values
- fmt.Printf("Service: %s v%s\n", config.ServiceName, config.Version)
- fmt.Printf("Listen Address: %s\n", config.ListenAddress)
- fmt.Printf("Cache Store: %s:%d\n", config.CacheStoreIp, config.CacheStorePort)
+ // 使用流暢的 API 從多個來源載入配置
+ config.NewConfigurationService(conf).
+  // 1. 從 .env 檔案載入(優先級最低)
+  LoadDotEnv().
+  // 2. 從環境變數載入
+  LoadEnvironmentVariables("").
+  // 3. 從特定前綴的環境變數載入(例如 Kubernetes 環境)
+  LoadEnvironmentVariables("K8S_").
+  // 4. 從基本配置檔案載入
+  LoadYamlFile("config.yaml").
+  // 5. 從環境特定的配置檔載入
+  LoadYamlFile("config.${ENVIRONMENT}.yaml").
+  // 6. 從命令列參數載入(優先級最高)
+  LoadCommandArguments().
+  // 7. 載入資源檔案(例如版本資訊)
+  LoadResource("").
+  // 8. 輸出最終配置
+  Output()
+
+ // 使用配置啟動服務
+ fmt.Printf("服務運行於連接埠 %d，日誌級別為 %s\n", conf.ServicePort, conf.LogLevel)
+ fmt.Printf("資料庫：%s (連接池大小：%d)\n", conf.DatabaseHost, conf.ConnectionPool)
+ fmt.Printf("工作目錄：%s\n", conf.Workspace)
+ fmt.Printf("版本：%s\n", conf.Version)
  
- // Start your application...
+ // 使用載入的配置啟動應用程式...
 }
 ```
+
+若要查看更完整的範例，包括環境設置和其他實用功能，請訪問我們的程式碼儲存庫。
+
+### 配置優先順序
+
+在上述範例中，載入順序定義了優先順序：
+
+1. 結構體中的預設值
+2. `.env` 檔案中的值
+3. 環境變數(無前綴)
+4. 環境變數(特定前綴)
+5. 基本 YAML 配置檔案
+6. 環境特定的 YAML 配置檔案
+7. 命令列參數
+
+後載入的來源會覆蓋先前載入的來源，使得不同環境下的配置策略更加靈活。
 
 ## 結構體標籤語法
 
