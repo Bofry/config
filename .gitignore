@@ -4,3 +4,4 @@
 .VERSION
 config.yaml
 config.*.yaml
+.DS_Store

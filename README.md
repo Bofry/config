@@ -1,225 +1,209 @@
 [ZH](README_zh.md)
 
-config
-=========
+# config
 
-## **Synopsis**
+A highly customizable Go configuration management library that supports multiple data sources.
+
+## Quick Start
+
+### Installing the Package
+
+First, install the config package using the `go get` command:
+
+```bash
+go get -u github.com/Bofry/config
+```
+
+### Running Your Application
+
+After creating your application, open your terminal and execute:
+
+```bash
+# Run directly with command-line arguments
+go run main.go -listen-address=":8080"
+
+# Or build and run
+go build
+./yourapp -listen-address=":8080"
+```
+
+You can pass any command-line argument that you've defined with `arg` tags in your configuration structure.
+
+## Key Features
+
+- Support for multiple configuration sources: environment variables, .env files, YAML/JSON files, command-line arguments, and resource files
+- Fluent API design for clean and readable configuration code
+- Intuitive configuration mapping through struct tags
+- Automatic data type conversion
+- Flexible configuration priority handling
+- Support for custom output formats
+
+## Usage Example
 
 ```go
-// main.go
 package main
 
 import (
-	"fmt"
-	"os"
-	"strings"
-
-	"github.com/Bofry/config"
+ "fmt"
+ "github.com/Bofry/config"
+ "github.com/Bofry/structproto"
+ "os"
+ "reflect"
 )
 
-func init() {
-	// set env
-	{
-		// NOTE: you can run the following commands in bash
-		// export ENVIRONMENT=production
-		// export REDIS_HOST=127.0.0.3:6379
-		// export REDIS_PASSWORD=1234
-		// export K8S_REDIS_HOST=demo-kubernetes:6379
-		// export K8S_REDIS_PASSWORD=p@ssw0rd
-		// export K8S_REDIS_DB=6
-		os.Clearenv()
-		os.Setenv("ENVIRONMENT", "production")
-		os.Setenv("REDIS_HOST", "127.0.0.3:6379")
-		os.Setenv("REDIS_PASSWORD", "1234")
-		os.Setenv("K8S_REDIS_HOST", "demo-kubernetes:6379")
-		os.Setenv("K8S_REDIS_PASSWORD", "p@ssw0rd")
-		os.Setenv("K8S_REDIS_DB", "6")
-	}
-	// generate .env
-	{
-		os.WriteFile(".env", []byte(
-			strings.Join([]string{
-				"REDIS_HOST=127.0.0.1:6379",
-				"REDIS_DB=29",
-				"TAG=demo,test",
-			}, "\n")), 0644)
-	}
-	// generate .VERSION
-	{
-		os.WriteFile(".VERSION", []byte(
-			strings.Join([]string{
-				"v1.0.2",
-			}, "\n")), 0644)
-	}
-	// generate config.yaml
-	{
-		os.WriteFile("config.yaml", []byte(
-			strings.Join([]string{
-				"redisDB: 3",
-				"redisPoolSize: 10",
-				"workspace: demo_test",
-			}, "\n")), 0644)
-	}
-	// generate config.staging.yaml
-	{
-		os.WriteFile("config.staging.yaml", []byte(
-			strings.Join([]string{
-				"redisDB: 9",
-				"redisPoolSize: 10",
-				"workspace: demo_stag",
-			}, "\n")), 0644)
-	}
-	// generate config.production.yaml
-	{
-		os.WriteFile("config.production.yaml", []byte(
-			strings.Join([]string{
-				"redisDB: 12",
-				"redisPoolSize: 50",
-				"workspace: demo_prod",
-			}, "\n")), 0644)
-	}
-}
+type (
+ ServiceConfig struct {
+  Environment string `env:"Environment"`
 
-type DummyConfig struct {
-	RedisHost     string   `env:"REDIS_HOST"       yaml:"redisHost"       arg:"redis-host;the Redis server address and port"`
-	RedisPassword string   `env:"REDIS_PASSWORD"   yaml:"redisPassword"   arg:"redis-passowrd;the Redis password"`
-	RedisDB       int      `env:"REDIS_DB"         yaml:"redisDB"         arg:"redis-db;the Redis database number"`
-	RedisPoolSize int      `env:"-"                yaml:"redisPoolSize"`
-	Workspace     string   `env:"-"                yaml:"workspace"       arg:"workspace;the data workspace"`
-	Tags          []string `env:"TAG"`
-	Version       string   `resource:".VERSION"`
+  // Core service information
+  Version     string `resource:".VERSION"`
+  Signature   string `resource:".SIGNATURE"`
+  ServiceName string `resource:".SERVICE_NAME"`
+
+  // HTTP server settings
+  ListenAddress  string `yaml:"ListenAddress"  arg:"listen-address;the combination of IP address and listen port"`
+  EnableCompress bool   `yaml:"UseCompress"    arg:"use-compress;indicates the response enable compress or not"`
+  ServerName     string `yaml:"ServerName"`
+
+  // Telemetry settings
+  JaegerTraceUrl string `yaml:"JaegerTraceUrl"`
+
+  // External services
+  CacheStoreIp   string `yaml:"Cache_Store_Ip"        env:"Cache_Store_Ip"`
+  CacheStorePort int    `yaml:"Cache_Store_Port"      env:"Cache_Store_Port"`
+  APIEndpoint    string `yaml:"API_Endpoint"          env:"API_Endpoint"`
+  MessageBroker  string `yaml:"Message_Broker_Address" env:"Message_Broker_Address"`
+ }
+)
+
+func NewConfiguration() *ServiceConfig {
+ conf := &ServiceConfig{}
+ config.NewConfigurationService(conf).
+  LoadYamlFile("config.yaml").
+  LoadYamlFile("config.${Environment}.yaml").
+  LoadEnvironmentVariables("").
+  LoadResource(".").
+  LoadResource(".conf/${Environment}").
+  LoadCommandArguments().
+  Map(func(field structproto.FieldInfo, rv reflect.Value) error {
+   switch rv.Kind() {
+   case reflect.String:
+    if !rv.IsZero() {
+     var hasEmpty bool = false
+     val := os.Expand(rv.String(), func(s string) string {
+      v := os.Getenv(s)
+      if len(v) == 0 {
+       hasEmpty = true
+      }
+      return v
+     })
+     if hasEmpty {
+      rv.SetString("")
+     } else {
+      rv.SetString(val)
+     }
+    }
+   }
+   return nil
+  })
+
+ return conf
 }
 
 func main() {
-	conf := DummyConfig{}
-
-	config.NewConfigurationService(&conf).
-		LoadDotEnv().
-		LoadEnvironmentVariables("").
-		LoadEnvironmentVariables("K8S").
-		LoadYamlFile("config.yaml").
-		LoadYamlFile("config.${ENVIRONMENT}.yaml").
-		LoadCommandArguments().
-		LoadResource("")
-	fmt.Printf("RedisHost     = %q\n", conf.RedisHost)
-	fmt.Printf("RedisPassword = %q\n", conf.RedisPassword)
-	fmt.Printf("RedisDB       = %d\n", conf.RedisDB)
-	fmt.Printf("RedisPoolSize = %d\n", conf.RedisPoolSize)
-	fmt.Printf("Workspace     = %q\n", conf.Workspace)
-	fmt.Printf("Tags          = %q\n", conf.Tags)
-	fmt.Printf("Version       = %q\n", conf.Version)
+ // Initialize configuration
+ config := NewConfiguration()
+ 
+ // Use configuration values
+ fmt.Printf("Service: %s v%s\n", config.ServiceName, config.Version)
+ fmt.Printf("Listening on: %s\n", config.ListenAddress)
+ fmt.Printf("Cache Store: %s:%d\n", config.CacheStoreIp, config.CacheStorePort)
+ 
+ // Start your application...
 }
 ```
-Open your terminal and execute the following command:
-- Bash
-	```bash
-	$ go build -o example
-	$ ./example -redis-db=32
-	```
-- Dos
-	```dos
-	C:\> go build -o example.exe
-	C:\> example.exe -redis-db=32
-	```
-You will get:
-```
-RedisHost     = "demo-kubernetes:6379"
-RedisPassword = "p@ssw0rd"
-RedisDB       = 32
-RedisPoolSize = 50
-Workspace     = "demo_prod"
-Tags          = ["demo" "test"]
-Version       = "v1.0.2"
-```
 
+## Struct Tag Syntax
 
-$~$
-## **Struct Tag Denotation**
+| Configuration Type    | Struct Tag | Tag Flags  | Configuration Service Method | Example                                                            |
+| :-------------------- | :--------- | :--------- | :--------------------------- | :----------------------------------------------------------------- |
+| Environment Variables | `env`      | *required* | LoadEnvironmentVariables()   | `env:"CACHE_ADDRESS,required"` or `env:"*CACHE_ADDRESS"`           |
+| .env Files            | `env`      | *required* | LoadDotEnv()                 | `env:"CACHE_ADDRESS,required"` or `env:"*CACHE_ADDRESS"`           |
+| JSON Files            | `json`     | --         | LoadJsonFile()               | `json:"LISTEN_PORT"`                                               |
+| YAML Files            | `yaml`     | --         | LoadYamlFile()               | `yaml:"LISTEN_PORT"`                                               |
+| Binary Resource Files | `resource` | *required* | LoadResource()               | `resource:"VERSION,required"` or `resource:"*VERSION"`             |
+| Text Resource Files   | `resource` | *required* | LoadResource()               | `resource:"VERSION,required"` or `resource:"*VERSION"`             |
+| Command Arguments     | `arg`      | --         | LoadCommandArguments()       | `arg:"SERVER_NAME"` or `arg:"SERVER_NAME;server name description"` |
 
-| configuration type    | struct tag | tag flags  | ConfigurationService method    | example |
-|:----------------------|:-----------|:-----------|:-------------------------------|:--------|
-| environment variables | `env`      | *required* | LoadEnvironmentVariables()     | `env:"CACHE_ADDRESS,required"` -or- `env:"*CACHE_ADDRESS"`         |
-| .env files            | `env`      | *required* | LoadDotEnv(), LoadDotEnvFile() | `env:"CACHE_ADDRESS,required"` -or- `env:"*CACHE_ADDRESS"`         |
-| json files            | `json`     | --         | LoadJsonFile()                 | `json:"LISTEN_PORT"`                                               |
-| yaml files            | `yaml`     | --         | LoadYamlFile()                 | `yaml:"LISTEN_PORT"`                                               |
-| binary reource files  | `resource` | *required* | LoadResource()                 | `resource:"VERSION,required"` -or- `resource:"*VERSION"`           |
-| text reource files    | `resource` | *required* | LoadResource()                 | `resource:"VERSION,required"` -or- `resource:"*VERSION"`           |
-| command arguments     | `arg`      | --         | LoadCommandArguments()         | `arg:"SERVER_NAME"` -or- `arg:"SERVER_NAME;specify server name"`   |
+### About Required Tags
 
-> 📝 The `resource:"VERSION,required"` is equivalent to `resource:"*VERSION"`, but not equivalent to `resource:"*VERSION,required"`. For examples:
-> | tag                              | name     | flag       |
-> |:---------------------------------|:---------|:-----------|
-> | `resource:"VERSION,required"`    | VERSION  | `required` |
-> | `resource:"*VERSION"`            | VERSION  | `required` |
-> | `resource:"*VERSION,required"`   | *VERSION | `required` |
-> | `resource:"*VERSION,required,_"` | *VERSION | `required` |
-> | `resource:"*VERSION,_"`          | *VERSION | *none*     |
-> | `resource:"VERSION,_"`           | VERSION  | *none*     |
-> 
-> 📝 If you want reserve the start "`*`" in name and keep the setting to optional, to append the blank flag "`_`" to tag.
-> 
-> 📝 The nested struct on tag **env**, **resource**, and **arg** ARE NOT SUPPORTED. And field type can be defined as `bool`, `int`, `uint`, `float`, `string`, `time.Duration`, `time.Time`, `url.URL`, `net.IP`, `[]bool`, `[]int`, `[]uint`, `[]float`, `[]string`, `[]time.Duration`, `[]time.Time`, `[]url.URL`, `[]net.IP`, `bytes.Buffer`, `json.RawMessage`, or `github.com/Bofry/types.RawContent`.
+`resource:"VERSION,required"` is equivalent to `resource:"*VERSION"`, but not equivalent to `resource:"*VERSION,required"`:
 
+| Tag                              | Name     | Flag       |
+| :------------------------------- | :------- | :--------- |
+| `resource:"VERSION,required"`    | VERSION  | `required` |
+| `resource:"*VERSION"`            | VERSION  | `required` |
+| `resource:"*VERSION,required"`   | *VERSION | `required` |
+| `resource:"*VERSION,required,_"` | *VERSION | `required` |
+| `resource:"*VERSION,_"`          | *VERSION | *none*     |
+| `resource:"VERSION,_"`           | VERSION  | *none*     |
 
-$~$
-### **Environment Variables**
-⠿ The following **Config** structure will import environment variables `CACHE_HOST`, `CACHE_PASSWORD`, and `CACHE_DB`. The tag text `env:"CACHE_HOST,required"` use the flag *required* indicates the environment variable `CACHE_HOST` is required. It will get exception if the variable doesn't be assgined.
+If you want to keep the "`*`" symbol at the beginning of the name while making it optional, append the blank flag "`_`" to the tag.
+
+### Supported Field Types
+
+The tags **env**, **resource**, and **arg** do not support nested structures. Supported field types include:
+`bool`, `int`, `uint`, `float`, `string`, `time.Duration`, `time.Time`, `url.URL`, `net.IP`,
+their corresponding array types, as well as `bytes.Buffer`, `json.RawMessage`, and `github.com/Bofry/types.RawContent`.
+
+## Environment Variable Configuration
+
+The following **Config** structure will import environment variables `CACHE_HOST`, `CACHE_PASSWORD`, and `CACHE_DB`:
+
 ```go
 type Config struct {
-  CacheHost     string `env:"CACHE_HOST,required"`
-  CachePassword string `env:"CACHE_PASSWORD"`
-  CacheDB       int    `env:"CACHE_DB"`
+  CacheHost     string `env:"CACHE_HOST,required"`  // Required environment variable
+  CachePassword string `env:"CACHE_PASSWORD"`       // Optional environment variable
+  CacheDB       int    `env:"CACHE_DB"`             // Optional environment variable, automatically converted to integer
 }
 ```
-The tag form `env:"CACHE_HOST,required"` also can be written as `env:"*CACHE_HOST"`. Put the symbol "`*`" in front of the name is equivalent to appending `required` to tag flag part. 
+
+The tag `env:"CACHE_HOST,required"` can also be written as `env:"*CACHE_HOST"`. Adding the "`*`" symbol before the name is equivalent to appending the `required` flag to the tag.
+
+## .env File Configuration
+
+.env files are used in the same way as environment variables. Notably, **.env files will not override existing environment variables**. They are recommended for development environment settings or providing sensible defaults.
+
+## Resource File Configuration
+
+The following **Config** structure will import content from the **VERSION** file:
+
 ```go
 type Config struct {
-  CacheHost     string `env:"*CACHE_HOST"`
-  CachePassword string `env:"CACHE_PASSWORD"`
-  CacheDB       int    `env:"CACHE_DB"`
+  AppVersion string `resource:"VERSION,required"`  // Required resource file
 }
 ```
 
+Resource file names can contain any Unicode characters, but cannot have spaces at the beginning or end, and cannot end with a period.
 
-$~$
-### **.env Files**
-⠿ The .env files same as **Environment Variables**.
-> 📝 The .env file WILL NOT OVERRIDE an environment variable that already exists. To consider .env file to set dev variable or sensible defaults.
+## Command Line Argument Configuration
 
+The following **Config** structure will import command line arguments `cache-host`, `cache-password`, and `cache-db`:
 
-$~$
-### **Resource Files**
-⠿ The following **Config** structure will import content from file **VERSION**. The tag text `resource:"VERSION,required"` use the flag *required* indicates the file **VERSION** is required. It will get exception if the file doesn't exist.
 ```go
 type Config struct {
-  AppVersion string `resource:"VERSION,required"`
-}
-```
-The tag form `resource:"VERSION,required"` also can be written as `resource:"*VERSION"`. Put the symbol "`*`" in front of the name is equivalent to appending `required` to tag flag part. 
-```go
-type Config struct {
-  AppVersion string `resource:"*VERSION"`
-}
-```
-> 📝 The name can compose by any unicode but no space character at the start or end, and no period at the end.
-
-
-$~$
-### **Command Arguments**
-⠿ The following **Config** structure will import command arguments `cache-host`, `cache-passowrd`, and `cache-db`. The tag text `arg:"cache-host;the cache server address and port"` separated by symbol "`;`" to two parts. The name part and the usage text part for help.
-```go
-type Config struct {
-	CacheHost     string `arg:"cache-host;the cache server address and port"`
-	CachePassword string `arg:"cache-passowrd;the cache server password"`
-	CacheDB       int    `arg:"cache-db;the cache database number"`
+  CacheHost     string `arg:"cache-host;cache server address and port"`
+  CachePassword string `arg:"cache-password;cache server password"`
+  CacheDB       int    `arg:"cache-db;cache database number"`
 }
 ```
 
-> ⛔ Don't name arg as `help`.  
+The tag text `arg:"cache-host;cache server address and port"` is separated by the symbol "`;`" into the name part and the usage description part.
 
+> ⛔ Do not name an argument `help`.
 
-$~$
-## **Dependency**
-- Yaml - https://godoc.org/gopkg.in/yaml.v2
-- Json - https://golang.org/pkg/encoding/json/
-- dotenv - https://github.com/joho/godotenv
+## Dependencies
+
+- Yaml - [gopkg.in/yaml.v2](https://godoc.org/gopkg.in/yaml.v2)
+- Json - [encoding/json](https://golang.org/pkg/encoding/json/)
+- dotenv - [github.com/joho/godotenv](https://github.com/joho/godotenv)
