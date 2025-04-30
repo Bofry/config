@@ -13,6 +13,16 @@ A highly customizable Go configuration management library that supports multiple
 - Flexible configuration priority handling
 - Support for custom output formats
 
+## Quick Start
+
+### Installing the Package
+
+First, install the config package using the `go get` command:
+
+```bash
+go get -u github.com/Bofry/config
+```
+
 ## Usage Example
 
 ```go
@@ -96,16 +106,6 @@ func main() {
  
  // Start your application...
 }
-```
-
-## Quick Start
-
-### Installing the Package
-
-First, install the config package using the `go get` command:
-
-```bash
-go get -u github.com/Bofry/config
 ```
 
 ### Running Your Application
